@@ -2,4 +2,4 @@
 .cache
 node_modules
 dist/*
-!mobilenetv2-ferplus-0.830
+!dist/mobilenetv2-ferplus-0.830
