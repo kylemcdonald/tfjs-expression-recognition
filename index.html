@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Face Detection and Expression</title>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      font-family: sans-serif;
+    }
+
+    #main {
+      position: relative;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    label {
+      display: block;
+      text-transform: capitalize;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="main">
+    <canvas id="output"></canvas>
+    <video id="video" playsinline style="width: auto; height: auto;">
+    </video>
+  </div>
+  <script>
+    let labels = ['neutral', 'happiness', 'surprise', 'sadness', 'anger', 'disgust', 'fear', 'contempt'];
+    labels.forEach(function (label) {
+      document.write('<label>' +
+        '<input type="range" min="0" max="100" value="0" id="amount-' + label + '"/>' + label +
+        '</label>');
+    });
+  </script>
+  <div id="debug"></div>
+  <script src="index.js"></script>
+</body>
+
+</html>
