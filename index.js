@@ -1,4 +1,8 @@
 import '@tensorflow/tfjs-backend-wasm';
+// in tfjs2, the webgl and cpu backends are also broken out separately
+// but trying to combine these packages with tfjs 1 will cause problems
+// import '@tensorflow/tfjs-backend-webgl';
+// import '@tensorflow/tfjs-backend-cpu';
 import * as tf from '@tensorflow/tfjs-core';
 import { loadGraphModel } from '@tensorflow/tfjs-converter';
 import * as blazeface from '@tensorflow-models/blazeface';
@@ -43,6 +47,8 @@ async function setupCamera() {
 }
 
 async function inference(detector, model, inputElt, width, height, ctx) {
+  let message = '';
+
   // typically we use tf.tidy to track and clean new tensors
   // but in async code we use tf.engine().startScope()/endScope()
   // https://stackoverflow.com/a/59934467/940196
@@ -54,7 +60,10 @@ async function inference(detector, model, inputElt, width, height, ctx) {
   // const inputGray = inputRaw.mean(2);
   // const input = tf.stack([inputGray, inputGray, inputGray], 2);
   
+  const detectorStart = performance.now();
   const detections = await detector.estimateFaces(input);
+  const detectorDuration = performance.now() - detectorStart;
+  message += 'detector: ' + detectorDuration.toFixed() + 'ms<br>';
 
   if (detections.length > 0) {
     const detection = detections[0];
@@ -76,7 +85,10 @@ async function inference(detector, model, inputElt, width, height, ctx) {
     ctx.strokeRect(x, y, size, size);
 
     const batch = preprocess(input, cx, cy, size, width, height);
+    const modelStart = performance.now();
     const prediction = model.predict(batch).arraySync()[0];
+    const modelDuration = performance.now() - modelStart;
+    message += 'model: ' + modelDuration.toFixed() + 'ms<br>';
 
     const labels = ['neutral', 'happiness', 'surprise', 'sadness', 'anger', 'disgust', 'fear', 'contempt'];
     const blend = 0.5;
@@ -88,7 +100,8 @@ async function inference(detector, model, inputElt, width, height, ctx) {
     });
   }
 
-  document.getElementById('debug').innerHTML = 'Tensors: ' + tf.memory().numTensors;
+  message += 'Tensors: ' + tf.memory().numTensors;
+  document.getElementById('debug').innerHTML = message;
   
   tf.engine().endScope();
 
@@ -98,6 +111,7 @@ async function inference(detector, model, inputElt, width, height, ctx) {
 }
 
 async function run() {
+  // 'webgl', 'cpu', or 'wasm'
   await tf.setBackend('webgl');
   let video = await setupCamera();
   video.play();
