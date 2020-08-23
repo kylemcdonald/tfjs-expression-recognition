@@ -14,8 +14,7 @@ addEventListener('message', prepare, { once: true })
 
 async function prepare() {
   const loadStart = performance.now();
-  // 'webgl', 'cpu', or 'wasm'
-  await tf.setBackend('webgl');
+  await tf.setBackend('wasm');
   const detector = await blazeface.load();
   const model = await loadGraphModel('mobilenetv2-ferplus-0.830/model.json');
   const loadDuration = performance.now() - loadStart;
