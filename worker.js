@@ -12,6 +12,23 @@ const DIV_FACTOR = 127.5;
 
 addEventListener('message', prepare, { once: true })
 
+function convertArrayBufferRGBAToUInt8RGB(buffer) {
+  // create view of ArrayBuffer
+  const x = new Uint8Array(buffer);
+  const n = x.length;
+  let i = 0;
+  let j = 0;
+  // loop through all pixels and shift them over to remove alpha
+  while (i < n) {
+    x[j] = x[i]; i++; j++;
+    x[j] = x[i]; i++; j++;
+    x[j] = x[i]; i++; j++;
+    i++;
+  }
+  // return a subset of the original
+  return x.slice(0, j);
+}
+
 async function prepare() {
   const loadStart = performance.now();
   await tf.setBackend('wasm');
@@ -23,12 +40,15 @@ async function prepare() {
     const printMessages = []
 
     const { inputArray, width, height } = e.data
-    console.debug(inputArray)
-    const int32 = new Int32Array(inputArray);
-    console.debug(int32)
+
+    // ArrayBuffer is untyped and in RGBA format, so we convert it to a
+    // UInt8Array and drop the alpha channel to make it RGB (2ms)
+    const UInt8RGB = convertArrayBufferRGBAToUInt8RGB(inputArray);
+
     tf.engine().startScope();
-    const input = tf.tensor3d(int32, [height, width, 3])
-    console.debug(input)
+    // load the RGB data into a tensor3d for tf.js (3ms)
+    const input = tf.tensor3d(UInt8RGB, [height, width, 3]);
+
     const detectorStart = performance.now();
     const detections = await detector.estimateFaces(input);
     const detectorDuration = performance.now() - detectorStart;
@@ -74,10 +94,11 @@ async function prepare() {
         debugMessage
       })
     }
+
+    tf.engine().endScope();
   })
 
   postMessage({ debugMessage: "model load: " + loadDuration.toFixed() + 'ms' })
-  tf.engine().endScope();
 }
 
 

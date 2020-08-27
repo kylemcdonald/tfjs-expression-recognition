@@ -63,23 +63,18 @@ function receiveInference(e, ctx, inputElt, worker) {
     , 0)
 }
 
+// create this once for use inside requestInference()
+var fromPixels2DContext = document.createElement('canvas').getContext('2d');
+
 async function requestInference(inputElt, width, height, worker) {
   console.debug('request inference')
 
-  // typically we use tf.tidy to track and clean new tensors
-  // but in async code we use tf.engine().startScope()/endScope()
-  // https://stackoverflow.com/a/59934467/940196
-  tf.engine().startScope();
-
-  const input = tf.browser.fromPixels(inputElt);
-  console.debug(input)
-
-  const transferrableInput = await (await input.data()).buffer
-  console.log(transferrableInput)
-
-  // send to worker
-  worker.postMessage({ inputArray: transferrableInput, width, height }, [transferrableInput])
-  tf.engine().endScope();
+  fromPixels2DContext.canvas.width = width;
+  fromPixels2DContext.canvas.height = height;
+  fromPixels2DContext.drawImage(inputElt, 0, 0, width, height);
+  const buffer = fromPixels2DContext.getImageData(0, 0, width, height).data.buffer;
+  
+  worker.postMessage({ inputArray: buffer, width, height }, [buffer])
 }
 
 async function run() {
