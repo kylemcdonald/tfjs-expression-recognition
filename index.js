@@ -64,7 +64,7 @@ function receiveInference(e, ctx, inputElt, worker) {
 }
 
 // create this once for use inside requestInference()
-var fromPixels2DContext = document.createElement('canvas').getContext('2d');
+const fromPixels2DContext = document.createElement('canvas').getContext('2d');
 
 async function requestInference(inputElt, width, height, worker) {
   console.debug('request inference')
