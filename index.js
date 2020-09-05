@@ -46,7 +46,7 @@ async function setupCamera() {
   });
 }
 
-async function inference(detector, model, inputElt, width, height, ctx) {
+async function inference(detector, model, labels, inputElt, width, height, ctx) {
   let message = '';
 
   // typically we use tf.tidy to track and clean new tensors
@@ -90,7 +90,6 @@ async function inference(detector, model, inputElt, width, height, ctx) {
     const modelDuration = performance.now() - modelStart;
     message += 'model: ' + modelDuration.toFixed() + 'ms<br>';
 
-    const labels = ['neutral', 'happiness', 'surprise', 'sadness', 'anger', 'disgust', 'fear', 'contempt'];
     const blend = 0.5;
     labels.map((label, i) => {
       const elt = document.getElementById('amount-' + label);
@@ -106,7 +105,7 @@ async function inference(detector, model, inputElt, width, height, ctx) {
   tf.engine().endScope();
 
   requestAnimationFrame(() => {
-    inference(detector, model, inputElt, width, height, ctx);
+    inference(detector, model, labels, inputElt, width, height, ctx);
   })
 }
 
@@ -126,9 +125,17 @@ async function run() {
   const ctx = canvas.getContext('2d');
 
   const detector = await blazeface.load();
-  const model = await loadGraphModel('mobilenetv2-ferplus-0.830/model.json');
+  // const model = await loadGraphModel('mobilenetv2-ferplus-0.830/model.json');
+  const model = await loadGraphModel('lfwa+-mobilenetv2_1.00_96-13-0.127/model.json');
+  const labels = await (await fetch('lfwa+-mobilenetv2_1.00_96-13-0.127/class_names.json')).json();
 
-  inference(detector, model, inputElt, width, height, ctx);
+  labels.forEach(function (label) {
+    document.getElementById('sliders').innerHTML += '<label>' +
+      '<input type="range" min="0" max="100" value="0" id="amount-' + label + '"/>' + label +
+      '</label>';
+  });
+
+  inference(detector, model, labels, inputElt, width, height, ctx);
 
 /*
   // some code for testing performance

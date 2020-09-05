@@ -32,14 +32,7 @@
     <video id="video" playsinline style="width: auto; height: auto;">
     </video>
   </div>
-  <script>
-    let labels = ['neutral', 'happiness', 'surprise', 'sadness', 'anger', 'disgust', 'fear', 'contempt'];
-    labels.forEach(function (label) {
-      document.write('<label>' +
-        '<input type="range" min="0" max="100" value="0" id="amount-' + label + '"/>' + label +
-        '</label>');
-    });
-  </script>
+  <div id="sliders"></div>
   <div id="debug"></div>
   <script src="index.js"></script>
 </body>
