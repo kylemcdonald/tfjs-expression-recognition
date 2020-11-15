@@ -7,8 +7,9 @@ import * as tf from '@tensorflow/tfjs-core';
 import { loadGraphModel } from '@tensorflow/tfjs-converter';
 import * as blazeface from '@tensorflow-models/blazeface';
 
-// scale up the detection from blazeface to capture more context
-const SCALE_FACTOR = 1.25;
+// scale up the detection from blazeface to capture slightly more context
+const SCALE_FACTOR = 1.00;
+const FACE_Y_OFFSET = -0.1;
 
 const IMG_SIZE = [96, 96];
 const SUB_FACTOR = 127.5;
@@ -80,7 +81,7 @@ async function inference(detector, model, labels, inputElt, width, height, ctx) 
     const cx = (x1 + x2) / 2;
     const cy = (y1 + y2) / 2;
     const x = cx - (size / 2);
-    const y = cy - (size / 2);
+    const y = cy - (size / 2) + (size * FACE_Y_OFFSET);
     ctx.strokeStyle = 'rgba(0, 255, 0)';
     ctx.strokeRect(x, y, size, size);
 
